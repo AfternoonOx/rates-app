@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /settings
+Disallow: /user
+Allow: /
+
+Sitemap: {{SITEMAP_URL}}
