@@ -5,7 +5,7 @@ Nowoczesna aplikacja webowa stworzona w Laravel i React, która pozwala śledzi�
 ## Co oferuje aplikacja?
 
 ### Konta użytkowników
-- Rejestracja i logowanie z weryfikacją e-mail
+- Rejestracja i logowanie
 - Zarządzanie profilem – możliwość zmiany imienia, nazwiska i pseudonimu
 - Zmiana hasła z ograniczeniem do 6 prób na minutę
 - Usuwanie konta
