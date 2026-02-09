@@ -237,13 +237,6 @@ The application integrates with the official NBP API:
    - `GET /cenyzlota/{date}` - Get gold price for specific date
    - `GET /cenyzlota/{startDate}/{endDate}` - Get gold price series
 
-#### Rate Limiting & Caching
-
-- API responses are cached in the database
-- Automatic weekend detection (NBP doesn't publish on weekends)
-- Future date validation
-- Error handling with fallbacks
-
 ### UI Avatars API
 
 User avatars are generated using:
