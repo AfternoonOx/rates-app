@@ -15,7 +15,7 @@ class WatchlistService
 
     public function seedCurrenciesIfEmpty(): void
     {
-        if ((new \App\Models\Currency)->count() !== 0) {
+        if (Currency::count() !== 0) {
             return;
         }
 

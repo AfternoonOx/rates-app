@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Data\ExchangeRateData;
 use App\Models\Currency;
 use App\Models\ExchangeRate;
+use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -114,8 +115,8 @@ class ExchangeRateService
             ->get();
 
         // Calculate expected number of business days (approx 5/7 of total days)
-        $start = new \DateTime($startDate);
-        $end = new \DateTime($endDate);
+        $start = new DateTime($startDate);
+        $end = new DateTime($endDate);
         $totalDays = max(1, $start->diff($end)->days + 1);
         $expectedBusinessDays = (int) ceil($totalDays * 5 / 7);
 
