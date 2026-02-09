@@ -26,6 +26,5 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-*.md
 boost.json
 .osp/
