@@ -27,7 +27,6 @@ A modern, full-stack web application built with Laravel and React for monitoring
 - **Responsive Design** - Fully responsive UI optimized for mobile and desktop
 - **WCAG 2.2 AA Compliant** - Meets basic accessibility guidelines
 - **Multi-language Support** - Available in Polish and English with live language switching
-- **Dark Mode Ready** - Using Tailwind CSS with modern design patterns
 
 ## Tech Stack
 

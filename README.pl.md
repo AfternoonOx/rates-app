@@ -26,7 +26,6 @@ Nowoczesna aplikacja webowa stworzona w Laravel i React, która pozwala śledzi�
 - W pełni responsywny interfejs – działa świetnie na telefonach i komputerach
 - Zgodność z wytycznymi dostępności WCAG 2.2 AA
 - Obsługa języka polskiego i angielskiego z możliwością przełączania w locie
-- Ciemny motyw oparty na Tailwind CSS
 
 ## Użyte technologie
 
