@@ -10,56 +10,6 @@ use Intervention\Image\ImageManager;
 
 class AvatarService
 {
-    private const string BASE_URL = 'https://ui-avatars.com/api/';
-
-    /**
-     * Generate avatar URL for a user.
-     *
-     * @param  array<string, mixed>  $options
-     */
-    public function getAvatarUrl(User $user, array $options = []): string
-    {
-        // If user has uploaded avatar, return storage URL
-        if ($user->avatar_path) {
-            return Storage::url($user->avatar_path);
-        }
-
-        $defaults = [
-            'name' => $user->full_name,
-            'size' => 128,
-            'background' => 'random',
-            'color' => 'fff',
-            'bold' => true,
-            'format' => 'svg',
-            'rounded' => false,
-        ];
-
-        $params = array_merge($defaults, $options);
-
-        return self::BASE_URL.'?'.http_build_query($params);
-    }
-
-    /**
-     * Generate avatar URL from a name string.
-     *
-     * @param  array<string, mixed>  $options
-     */
-    public function getAvatarUrlFromName(string $name, array $options = []): string
-    {
-        $defaults = [
-            'name' => $name,
-            'size' => 128,
-            'background' => 'random',
-            'color' => 'fff',
-            'bold' => true,
-            'format' => 'svg',
-            'rounded' => false,
-        ];
-
-        $params = array_merge($defaults, $options);
-
-        return self::BASE_URL.'?'.http_build_query($params);
-    }
 
     /**
      * Upload and store a user avatar.

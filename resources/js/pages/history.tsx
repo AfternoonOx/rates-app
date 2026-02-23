@@ -27,9 +27,13 @@ import AppLayout from '@/layouts/app-layout';
 import { downloadTextFile, toCsv } from '@/lib/csv';
 import { formatDateToInputValue } from '@/lib/date';
 import { dashboard } from '@/routes';
-import { fetchSingle, fetchTrend } from '@/services/history';
-import type { ChartDataPoint } from '@/services/history';
-import { extractErrorMessage } from '@/services/http';
+import {
+    exchangeRateTrend,
+    goldPriceTrend,
+    exchangeRate,
+    goldPrice,
+} from '@/routes/history';
+import { extractErrorMessage, fetchJson } from '@/services/http';
 import type { BreadcrumbItem } from '@/types';
 
 type Currency = {
@@ -40,6 +44,50 @@ type Currency = {
 type HistoryPageProps = {
     currencies: Currency[];
 };
+
+type ChartDataPoint = {
+    date: string;
+    value: number;
+    tableNo?: string | null;
+};
+
+async function fetchTrend(params: {
+    tab: 'currency' | 'gold';
+    from: string;
+    to: string;
+    currency?: string;
+}) {
+    const query: Record<string, string> = {
+        from: params.from,
+        to: params.to,
+        ...(params.tab === 'currency' && params.currency ? { currency: params.currency } : {}),
+    };
+
+    const url =
+        params.tab === 'currency'
+            ? exchangeRateTrend({ query }).url
+            : goldPriceTrend({ query }).url;
+
+    return fetchJson(url);
+}
+
+async function fetchSingle(params: {
+    tab: 'currency' | 'gold';
+    date: string;
+    currency?: string;
+}) {
+    const query: Record<string, string> = {
+        date: params.date,
+        ...(params.tab === 'currency' && params.currency ? { currency: params.currency } : {}),
+    };
+
+    const url =
+        params.tab === 'currency'
+            ? exchangeRate({ query }).url
+            : goldPrice({ query }).url;
+
+    return fetchJson(url);
+}
 
 /**
  * Uncontrolled date input that commits its value on blur/Enter.
@@ -116,10 +164,11 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
 
     // Decimals: Y axis uses 0 for gold, 2 for currency; tooltip always uses 2
     const yAxisDecimals = activeTab === 'gold' ? 0 : 2;
-    const tooltipDecimals = 2;
+    const tooltipDecimals = 4;
 
     // Form State
     const [selectedCurrency, setSelectedCurrency] = useState(currencies.length > 0 ? currencies[0].code : 'USD');
+    const [displayedCurrency, setDisplayedCurrency] = useState(currencies.length > 0 ? currencies[0].code : 'USD');
     const [dateFrom, setDateFrom] = useState(() => {
         const d = new Date();
         d.setDate(d.getDate() - 30);
@@ -131,6 +180,7 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
     const dateFromRef = useRef<HTMLInputElement>(null);
     const dateToRef = useRef<HTMLInputElement>(null);
     const singleDateRef = useRef<HTMLInputElement>(null);
+    const tableRegionRef = useRef<HTMLDivElement>(null);
 
     const minAllowedDate = activeTab === 'gold' ? '2013-01-02' : '2002-01-02';
     const maxAllowedDate = formatDateToInputValue(new Date());
@@ -153,7 +203,7 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
 
         const start = dateFromRef.current?.value || dateFrom;
         const end = dateToRef.current?.value || dateTo;
-        const prefix = activeTab === 'currency' ? selectedCurrency : 'GOLD';
+        const prefix = activeTab === 'currency' ? displayedCurrency : 'GOLD';
         const filename = `history-${prefix}-${start}-${end}.csv`;
 
         downloadTextFile(filename, toCsv(headers, rows), 'text/csv;charset=utf-8;');
@@ -188,6 +238,7 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
 
                 const payload = data as { data?: ChartDataPoint[] };
                 setChartData(Array.isArray(payload.data) ? payload.data : []);
+                setDisplayedCurrency(selectedCurrency);
             } else {
                 const date = singleDateRef.current?.value || singleDate;
                 setSingleDate(date);
@@ -214,6 +265,7 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
                     tableNo: typeof payload.tableNo === 'string' ? payload.tableNo : null,
                     date: typeof payload.date === 'string' ? payload.date : undefined,
                 });
+                setDisplayedCurrency(selectedCurrency);
             }
         } catch {
             setError(t('error_fetching_data'));
@@ -228,6 +280,7 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
         setSingleResult(null);
         setError(null);
         setShowAllRows(false);
+        setDisplayedCurrency(selectedCurrency);
     };
 
     return (
@@ -407,7 +460,7 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
                                     <div>
                                         <h2 className="text-lg font-semibold text-slate-900">
                                             {activeTab === 'currency'
-                                                ? `${selectedCurrency} ${t('exchange_rate_trend')}`
+                                                ? `${displayedCurrency} ${t('exchange_rate_trend')}`
                                                 : t('gold_price_evolution')
                                             }
                                         </h2>
@@ -427,7 +480,11 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
                                     </div>
                                 </div>
 
-                                <div className="h-[400px] w-full min-w-0">
+                                <div 
+                                    className="h-[400px] w-full min-w-0"
+                                    role="img"
+                                    aria-label={`${activeTab === 'currency' ? `${displayedCurrency} ${t('exchange_rate_trend')}` : t('gold_price_evolution')} ${t('chart')} from ${dateFrom} to ${dateTo}. ${t('data_points')} ${t('table')} ${t('below')}.`}
+                                >
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
                                             <defs>
@@ -481,43 +538,119 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
                             </div>
 
                             {/* Range Stats Table */}
-                            <div className="card-base overflow-hidden">
+                            <div 
+                                id="data-table-region"
+                                ref={tableRegionRef}
+                                className="card-base overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 rounded-lg"
+                                tabIndex={0}
+                                role="region"
+                                aria-labelledby="table-heading"
+                            >
                                 <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
-                                    <h3 className="font-semibold text-slate-900 text-sm">{t('data_points')}</h3>
+                                    <h3 id="table-heading" className="font-semibold text-slate-900 text-sm">{t('data_points')}</h3>
                                 </div>
                                 <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-sm">
-                                        <caption className="sr-only">{t('data_points')}</caption>
-                                        <thead>
-                                            <tr className="border-b border-slate-100 text-slate-500">
-                                                <th scope="col" className="px-6 py-3 font-medium">{t('date')}</th>
-                                                {chartData.some((p) => p.tableNo != null) && (
-                                                    <th scope="col" className="px-6 py-3 font-medium">{t('table_no')}</th>
-                                                )}
-                                                <th scope="col" className="px-6 py-3 font-medium text-right">{t('value')} (PLN)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {[...chartData]
-                                                .reverse()
-                                                .slice(0, showAllRows ? chartData.length : 5)
-                                                .map((row) => (
-                                                    <tr key={`${row.date}-${row.tableNo ?? ''}`} className="hover:bg-slate-50">
-                                                        <td className="px-6 py-3 text-slate-900">{row.date}</td>
-                                                        {chartData.some((p) => p.tableNo != null) && (
-                                                            <td className="px-6 py-3 text-slate-500 font-mono text-xs">{row.tableNo || '—'}</td>
+                                    {(() => {
+                                        const hasTableNo = chartData.some((p) => p.tableNo != null);
+                                        const displayedData = [...chartData]
+                                            .reverse()
+                                            .slice(0, showAllRows ? chartData.length : 5);
+                                        const colCount = hasTableNo ? 3 : 2;
+                                        
+                                        return (
+                                            <table 
+                                                className="w-full text-left text-sm"
+                                                aria-rowcount={displayedData.length + 1}
+                                                aria-colcount={colCount}
+                                                aria-label={`${t('data_points')}: ${displayedData.length} ${t('rows')}`}
+                                            >
+                                                <caption className="sr-only">
+                                                    {displayedData.length} {t('rows')} of {activeTab === 'currency' ? t('exchange_rate_trend') : t('gold_price_evolution')} data with {colCount} columns
+                                                </caption>
+                                                <thead>
+                                                    <tr 
+                                                        className="border-b border-slate-100 text-slate-500"
+                                                        aria-rowindex={1}
+                                                    >
+                                                        <th 
+                                                            scope="col" 
+                                                            className="px-6 py-3 font-medium"
+                                                            aria-colindex={1}
+                                                        >
+                                                            {t('date')}
+                                                        </th>
+                                                        {hasTableNo && (
+                                                            <th 
+                                                                scope="col" 
+                                                                className="px-6 py-3 font-medium"
+                                                                aria-colindex={2}
+                                                            >
+                                                                {t('table_no')}
+                                                            </th>
                                                         )}
-                                                        <td className="px-6 py-3 text-right font-medium text-slate-900">{row.value.toFixed(tooltipDecimals)}</td>
+                                                        <th 
+                                                            scope="col" 
+                                                            className="px-6 py-3 font-medium text-right"
+                                                            aria-colindex={hasTableNo ? 3 : 2}
+                                                        >
+                                                            {t('value')} (PLN)
+                                                        </th>
                                                     </tr>
-                                                ))}
-                                        </tbody>
-                                    </table>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100">
+                                                    {displayedData.map((row, idx) => {
+                                                        const rowLabel = hasTableNo 
+                                                            ? `${t('date')}: ${row.date}, ${t('table_no')}: ${row.tableNo || '—'}, ${t('value')}: ${row.value.toFixed(4)} PLN`
+                                                            : `${t('date')}: ${row.date}, ${t('value')}: ${row.value.toFixed(4)} PLN`;
+                                                        
+                                                        return (
+                                                            <tr 
+                                                                key={`${row.date}-${row.tableNo ?? ''}`} 
+                                                                className="hover:bg-slate-50 focus-visible:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 focus-visible:outline-offset-[-2px]"
+                                                                aria-rowindex={idx + 2}
+                                                                aria-label={rowLabel}
+                                                                tabIndex={0}
+                                                            >
+                                                            <td 
+                                                                className="px-6 py-3 text-slate-900"
+                                                                aria-colindex={1}
+                                                            >
+                                                                {row.date}
+                                                            </td>
+                                                            {hasTableNo && (
+                                                                <td 
+                                                                    className="px-6 py-3 text-slate-500 font-mono text-xs"
+                                                                    aria-colindex={2}
+                                                                >
+                                                                    {row.tableNo || '—'}
+                                                                </td>
+                                                            )}
+                                                            <td 
+                                                                className="px-6 py-3 text-right font-medium text-slate-900"
+                                                                aria-colindex={hasTableNo ? 3 : 2}
+                                                            >
+                                                                {row.value.toFixed(4)}
+                                                            </td>
+                                                        </tr>
+                                                    );})}
+                                                </tbody>
+                                            </table>
+                                        );
+                                    })()}
                                     {chartData.length > 5 && (
                                         <div className="px-6 py-3 border-t border-slate-200 text-center">
                                             <button
                                                 type="button"
-                                                onClick={() => setShowAllRows(!showAllRows)}
-                                                className="text-emerald-700 text-sm font-medium hover:underline focus:outline-2 focus:outline-offset-1 focus:outline-emerald-600 rounded-sm"
+                                                onClick={() => {
+                                                    setShowAllRows(!showAllRows);
+                                                    // Keep focus on table region after expansion
+                                                    setTimeout(() => {
+                                                        tableRegionRef.current?.focus();
+                                                    }, 0);
+                                                }}
+                                                aria-expanded={showAllRows}
+                                                aria-controls="data-table-region"
+                                                className="text-emerald-700 text-sm font-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-emerald-600 rounded-sm"
                                             >
                                                 {showAllRows ? t('show_less') : `${t('view_all')} ${chartData.length} ${t('rows')}`}
                                             </button>
@@ -547,7 +680,7 @@ export default function HistoryPage({ currencies }: HistoryPageProps) {
                                 <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-6">
                                     <div className="text-left">
                                         <p className="text-xs text-slate-500 mb-1">{t('currency_asset')}</p>
-                                        <p className="font-semibold text-slate-900">{activeTab === 'currency' ? `${selectedCurrency} (1)` : t('gold_1g')}</p>
+                                        <p className="font-semibold text-slate-900">{activeTab === 'currency' ? `${displayedCurrency} (1)` : t('gold_1g')}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs text-slate-500 mb-1">{t('effective_date')}</p>

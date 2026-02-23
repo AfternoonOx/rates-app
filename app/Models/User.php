@@ -84,7 +84,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the user's avatar URL from storage or ui-avatars.com.
+     * Accessor for the 'avatar' attribute.
+     * 
+     * This method is automatically called by Laravel when accessing $user->avatar. 
+     * The mapping happens dynamically via Laravel's magic methods.
+     * It is used in frontend components and included in JSON responses via the $appends array.
+     *
      */
     public function getAvatarAttribute(): string
     {

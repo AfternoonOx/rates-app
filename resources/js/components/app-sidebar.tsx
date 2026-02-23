@@ -39,7 +39,7 @@ function NavItem({
     );
 
     if (href) {
-        return <Link href={href}>{content}</Link>;
+        return <Link href={href} className="block rounded-md focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f2922]">{content}</Link>;
     }
     return <a>{content}</a>;
 }
@@ -158,7 +158,7 @@ export function AppSidebar({
                         <button
                             type="button"
                             onClick={() => setProfileOpen(!isProfileOpen)}
-                            className="flex items-center gap-3 w-full p-2 hover:bg-emerald-900/30 rounded-lg transition-colors text-left group"
+                            className="flex items-center gap-3 w-full p-2 hover:bg-emerald-900/30 rounded-lg transition-colors text-left group focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f2922]"
                         >
                             <div className="w-8 h-8 bg-emerald-800 rounded-full flex items-center justify-center text-emerald-100 text-xs font-bold">
                                 {getInitials(user.first_name, user.last_name)}
@@ -185,7 +185,7 @@ export function AppSidebar({
                                     <button
                                         type="button"
                                         onClick={() => setLanguageOpen((open) => !open)}
-                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3"
+                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 focus-visible:bg-emerald-50 focus-visible:outline-none rounded-md"
                                     >
                                         <Globe size={16} />
                                         <span>{t('language')}</span>
@@ -201,14 +201,14 @@ export function AppSidebar({
                                             <button
                                                 type="button"
                                                 onClick={() => handleLanguageChange('en')}
-                                                className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 ${locale === 'en' ? 'text-emerald-700 font-medium' : 'text-slate-700'}`}
+                                                className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 focus-visible:bg-emerald-50 focus-visible:outline-none rounded-md ${locale === 'en' ? 'text-emerald-700 font-medium' : 'text-slate-700'}`}
                                             >
                                                 {t('english')}
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => handleLanguageChange('pl')}
-                                                className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 ${locale === 'pl' ? 'text-emerald-700 font-medium' : 'text-slate-700'}`}
+                                                className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 focus-visible:bg-emerald-50 focus-visible:outline-none rounded-md ${locale === 'pl' ? 'text-emerald-700 font-medium' : 'text-slate-700'}`}
                                             >
                                                 {t('polish')}
                                             </button>
@@ -218,7 +218,7 @@ export function AppSidebar({
 
                                 <Link
                                     href={profile.edit().url}
-                                    className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3"
+                                    className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 focus-visible:bg-emerald-50 focus-visible:outline-none rounded-md block"
                                 >
                                     <Settings size={16} />
                                     <span>{t('settings')}</span>
@@ -227,7 +227,7 @@ export function AppSidebar({
                                 <button
                                     type="button"
                                     onClick={handleLogout}
-                                    className="w-full px-4 py-2 text-left text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3"
+                                    className="w-full px-4 py-2 text-left text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 focus-visible:bg-rose-50 focus-visible:outline-none rounded-md"
                                 >
                                     <LogOut size={16} />
                                     <span>{t('logout')}</span>

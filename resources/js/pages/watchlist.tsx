@@ -11,6 +11,7 @@ import { WatchlistCurrencyCard } from '@/components/watchlist-currency-card';
 import { useI18n } from '@/hooks/use-i18n';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
+import { store as storeCurrency, destroy as destroyCurrency } from '@/routes/currencies';
 import type { BreadcrumbItem } from '@/types';
 import type { WatchlistCurrencyCardData } from '@/types';
 
@@ -64,7 +65,7 @@ export default function Watchlist({ watchlist, allCurrencies }: Props) {
 
     const addToWatchlist = (currencyCode: string) => {
         setProcessing(currencyCode);
-        router.post('/user/currencies', { currency_code: currencyCode }, {
+        router.post(storeCurrency().url, { currency_code: currencyCode }, {
             preserveScroll: true,
             onFinish: () => {
                 setProcessing(null);
@@ -75,7 +76,7 @@ export default function Watchlist({ watchlist, allCurrencies }: Props) {
 
     const removeFromWatchlist = (code: string) => {
         setProcessing(code);
-        router.delete(`/user/currencies/${code}`, {
+        router.delete(destroyCurrency(code).url, {
             preserveScroll: true,
             onFinish: () => setProcessing(null),
         });

@@ -20,6 +20,7 @@ import { WatchlistCurrencyCard } from '@/components/watchlist-currency-card';
 import { useI18n } from '@/hooks/use-i18n';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard, watchlist as watchlistRoute } from '@/routes';
+import { destroy as destroyCurrency } from '@/routes/currencies';
 import type { BreadcrumbItem } from '@/types';
 import type { GoldPrice, SharedData, User, WatchlistCurrencyCardData } from '@/types';
 
@@ -220,7 +221,7 @@ export default function Dashboard({ goldPrices, watchlist }: DashboardProps) {
                                     processing={processing === currency.code}
                                     onRemove={(code) => {
                                         setProcessing(code);
-                                        router.delete(`/user/currencies/${code}`, {
+                                        router.delete(destroyCurrency(code).url, {
                                             preserveScroll: true,
                                             onFinish: () => setProcessing(null),
                                         });

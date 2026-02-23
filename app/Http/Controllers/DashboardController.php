@@ -16,7 +16,7 @@ class DashboardController extends Controller
     ) {}
 
     /**
-     * Display the dashboard with gold prices and user currencies.
+     * Single Action Controller. Display the dashboard with gold prices and user currencies. 
      */
     public function __invoke(Request $request): Response
     {

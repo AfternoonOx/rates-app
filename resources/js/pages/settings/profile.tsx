@@ -1,4 +1,4 @@
-import { Form, Link, usePage } from '@inertiajs/react';
+import { Form, usePage } from '@inertiajs/react';
 import {
     Camera,
     CheckCircle2,

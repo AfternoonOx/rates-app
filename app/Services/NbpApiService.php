@@ -58,23 +58,10 @@ class NbpApiService
             ->filter()
             ->values();
 
-        if (true) {
-            return [
-                'code' => $code,
-                'currency' => $currencyName,
-                'rates' => $normalizedRates->all(),
-            ];
-        }
-
-        $first = $normalizedRates->first();
-        if (! $first) {
-            return null;
-        }
-
         return [
             'code' => $code,
             'currency' => $currencyName,
-            'rate' => $first,
+            'rates' => $normalizedRates->all(),
         ];
     }
 
